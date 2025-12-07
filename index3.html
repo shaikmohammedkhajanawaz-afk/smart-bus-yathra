@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Bus Yathra — Single Page with Seat Selection</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ---------- Theme variables ---------- */
+    :root{
+      --bg: #293b59;
+      --card: #162e5e;
+      --accent-1: #00afc2;
+      --accent-2: #FF7A59;
+      --muted: #9aa7bf;
+      --glass: rgba(255, 255, 255, 0.016);
+      --accent-grad: linear-gradient(90deg,var(--accent-1),var(--accent-2));
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-strong: 0 10px 30px rgba(2,6,23,0.6);
+      --max-width: 1100px;
+      --seat-size: 44px;
+      --seat-gap: 8px;
+    }
+
+    /* ---------- Reset & base ---------- */
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter, Poppins, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;color:#e6eef8;
+      background: linear-gradient(180deg,var(--bg) 0%, #071029 100%);
+      -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+      font-size:16px;line-height:1.45;
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--max-width);margin:36px auto;padding:20px}
+
+    /* ---------- Header ---------- */
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-mark{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#071029;box-shadow:0 6px 18px rgba(0,0,0,0.4)}
+    .brand-text .title{font-weight:800;letter-spacing:0.2px}
+    .brand-text .tag{font-size:12px;color:var(--muted)}
+
+    .nav{display:flex;gap:10px;align-items:center}
+    .pill{background: linear-gradient(90deg, rgba(255,255,255,0.02), transparent);padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.03);font-weight:700;color:#dbe9f0;font-size:14px}
+    .btn-primary{background:var(--accent-grad);color:#071029;padding:12px 18px;border-radius:12px;font-weight:800;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:8px;margin-left:6px;transition:transform .2s,box-shadow .2s}
+    .btn-primary:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(2,12,23,0.7)}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:10px 14px;border-radius:12px;cursor:pointer}
+
+    /* ---------- Hero ---------- */
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center}
+    .card{background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius-lg);padding:26px;box-shadow:var(--shadow-strong);border:1px solid rgba(255,255,255,0.03)}
+    h1{font-family:Poppins, Inter;font-size:34px;margin:0 0 10px 0;line-height:1.02;color:transparent;background:var(--accent-grad);-webkit-background-clip:text;background-clip:text}
+    .lead{color:var(--muted);margin:0 0 18px 0;font-size:15px}
+
+    .features{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+    .feature{background:var(--glass);padding:10px 12px;border-radius:10px;font-weight:600;color:#dbe9f7;font-size:13px}
+
+    .cta-row{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap}
+    .info-bar{display:flex;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap}
+
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+    .stat{background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));padding:12px;border-radius:12px;text-align:center}
+    .stat .muted{color:var(--muted)}
+    .stat h3{margin:6px 0 0 0;font-size:20px}
+
+    /* ---------- Right visual ---------- */
+    .visual{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    .logo-wrap{width:320px;height:220px;border-radius:14px;background:linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03);backdrop-filter: blur(6px);transition:transform .24s,box-shadow .24s}
+    .logo-wrap:hover{transform:translateY(-6px);box-shadow:0 22px 60px rgba(2,6,23,0.5)}
+    .bus-svg{width:84%;height:auto;filter:drop-shadow(0 8px 18px rgba(0,0,0,0.6));transition:transform .4s cubic-bezier(.2,.9,.3,1)}
+    .logo-wrap:hover .bus-svg{transform:translateY(-6px) rotate(-2deg) scale(1.02)}
+    .logo-note{max-width:320px;text-align:center;color:var(--muted);font-size:14px}
+
+    /* ---------- Sections ---------- */
+    section{margin-top:26px}
+    .section-head{display:flex;justify-content:space-between;align-items:center}
+    .routes-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+    .route-card{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);display:flex;flex-direction:column;gap:12px;border:1px solid rgba(255,255,255,0.03)}
+    .route-name{font-weight:800}
+    .route-meta{color:var(--muted);font-size:13px}
+    .route-actions{display:flex;gap:8px}
+
+    /* ---------- Admin panel ---------- */
+    .admin-panel{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.03)}
+    .admin-grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+
+    /* ---------- Forms & modals ---------- */
+    .auth-form .field{display:block;margin-top:12px}
+    .field-label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
+    input[type="text"],input[type="email"],input[type="password"],select{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:15px}
+    input:focus{outline:none;box-shadow:0 8px 30px rgba(2,12,23,0.6);border-color:var(--accent-1)}
+
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,8,23,0.6);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+    .modal{width:100%;max-width:560px;background:var(--card);padding:20px;border-radius:12px;box-shadow:0 30px 80px rgba(3,8,22,0.8);border:1px solid rgba(255,255,255,0.03)}
+    .modal h3{margin:0 0 6px 0}
+    .modal .actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+
+    /* ---------- Seat map ---------- */
+    .seat-grid{display:grid;grid-template-columns:repeat(4, var(--seat-size));gap:var(--seat-gap);justify-content:center;padding:12px;margin-top:8px}
+    .seat{
+      width:var(--seat-size);height:var(--seat-size);display:inline-flex;align-items:center;justify-content:center;border-radius:8px;
+      background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);cursor:pointer;font-weight:700;
+    }
+    .seat[aria-pressed="true"]{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:#071029;border-color:transparent;box-shadow:0 8px 28px rgba(2,12,23,0.6)}
+    .seat[aria-disabled="true"]{opacity:0.45;cursor:not-allowed;background:rgba(255,255,255,0.01)}
+    .seat:focus{outline:3px solid rgba(0,194,168,0.18);outline-offset:4px}
+
+    .seat-legend{display:flex;gap:10px;align-items:center;margin-top:10px}
+    .legend-item{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+    .legend-sample{width:18px;height:18px;border-radius:4px;display:inline-block}
+
+    /* ---------- Small utils ---------- */
+    .muted{color:var(--muted)}
+    .hidden{display:none}
+    .center{text-align:center}
+    .small{font-size:13px}
+    .chip{padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);font-weight:700}
+
+    /* ---------- Responsive ---------- */
+    @media (max-width:1100px){.routes-list{grid-template-columns:repeat(2,1fr)}.hero{grid-template-columns:1fr 320px}.admin-grid{grid-template-columns:1fr}}
+    @media (max-width:720px){.routes-list{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.brand-text .tag{display:none}.nav .pill{display:none}}
+    @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">SB</div>
+        <div class="brand-text">
+          <div class="title">Smart Bus Yathra</div>
+          <div class="tag">Your Smart Travel Partner</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a class="pill" href="#features">Features</a>
+        <a class="pill" href="#routes">Routes</a>
+        <a class="pill" href="#admin">Admin</a>
+        <button id="open-login" class="pill">Sign in</button>
+        <button id="open-signup" class="pill">Sign up</button>
+        <button id="start-yathra" class="btn-primary">Start Yathra</button>
+      </nav>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero card" role="region" aria-label="Hero">
+      <div>
+        <h1>Smart Bus Yathra — Ride Smarter, Arrive Happier</h1>
+        <p class="lead">Real-time tracking • Smooth booking • Eco-friendly routes. Built for students and daily commuters.</p>
+
+        <div class="features" id="features">
+          <div class="feature">Live Tracking</div>
+          <div class="feature">Easy Tickets</div>
+          <div class="feature">Alerts & ETA</div>
+        </div>
+
+        <div class="cta-row">
+          <button id="cta-start" class="btn-primary">Start Yathra</button>
+          <button id="cta-learn" class="btn-ghost">Learn More</button>
+        </div>
+
+        <div class="info-bar" aria-hidden="false">
+          <div class="chip">New: Student Discount</div>
+          <div class="chip">Safety Certified</div>
+          <div class="chip">Eco Routes</div>
+        </div>
+
+        <div class="stats" aria-hidden="false">
+          <div class="stat">
+            <div class="muted">Active buses</div>
+            <h3 class="count">128</h3>
+          </div>
+          <div class="stat">
+            <div class="muted">Daily riders</div>
+            <h3 class="count">24K+</h3>
+          </div>
+          <div class="stat">
+            <div class="muted">On-time rate</div>
+            <h3 class="count">96%</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="visual">
+        <div class="logo-wrap" aria-hidden="true">
+          <!-- Inline SVG logo (replaceable) -->
+          <svg class="bus-svg" viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="bus logo">
+            <defs>
+              <linearGradient id="g1" x1="0" x2="1">
+                <stop offset="0" stop-color="#00C2A8"/>
+                <stop offset="1" stop-color="#FF7A59"/>
+              </linearGradient>
+            </defs>
+            <rect x="6" y="60" rx="24" ry="24" width="628" height="180" fill="url(#g1)" opacity="0.12" />
+            <g transform="translate(40,60)">
+              <rect x="0" y="20" width="520" height="120" rx="18" fill="#0b1220" stroke="url(#g1)" stroke-width="6"/>
+              <rect x="24" y="36" width="200" height="54" rx="8" fill="#081222"/>
+              <rect x="240" y="36" width="120" height="54" rx="8" fill="#081222"/>
+              <g transform="translate(40,120)">
+                <circle cx="80" cy="36" r="36" fill="#071029" stroke="#0ea89e" stroke-width="6" />
+                <circle cx="360" cy="36" r="36" fill="#071029" stroke="#ff7a59" stroke-width="6" />
+              </g>
+              <text x="40" y="110" fill="#dff6f0" font-family="Poppins" font-weight="700" font-size="34">SMART BUS</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="logo-note">You can replace this SVG with your branded logo (use &lt;img src="logo.png"&gt;)</div>
+      </div>
+    </div>
+
+    <!-- Routes section -->
+    <section id="routes" class="card" aria-labelledby="routes-heading">
+      <div class="section-head">
+        <div>
+          <h2 id="routes-heading" style="margin:0">Available Routes</h2>
+          <div class="small muted">Tap a route to view stops, timings and book.</div>
+        </div>
+        <div>
+          <button id="filter-btn" class="pill">All routes</button>
+        </div>
+      </div>
+
+      <div class="routes-list" id="routes-list" aria-live="polite">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <!-- Admin -->
+    <section id="admin" class="admin-grid" aria-labelledby="admin-heading">
+      <div class="admin-panel card">
+        <h3 id="admin-heading">Admin Overview</h3>
+        <div style="display:flex;gap:12px;margin-top:12px">
+          <div class="stat" style="flex:1">
+            <div class="muted">Active buses</div>
+            <h3>128</h3>
+          </div>
+          <div class="stat" style="flex:1">
+            <div class="muted">Pending bookings</div>
+            <h3>24</h3>
+          </div>
+          <div class="stat" style="flex:1">
+            <div class="muted">On-time</div>
+            <h3>96%</h3>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;display:flex;gap:8px;align-items:center">
+          <button id="admin-add-route" class="btn-primary">Add route</button>
+          <button id="admin-manage" class="btn-ghost">Manage buses</button>
+        </div>
+
+        <div id="routes-admin" style="margin-top:12px"></div>
+      </div>
+
+      <div class="admin-panel card">
+        <h3>Quick Actions</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+          <button class="pill" onclick="alert('Exported to (passengers)')">Export CSV</button>
+          <button class="pill" onclick="alert('Notifications sent (admin-add-route)')">Send Notification</button>
+          <button class="pill" onclick="alert('Reports generated (driver admin)')">Generate Report</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Modals (hidden until used) -->
+  <div id="modal-login" class="modal-backdrop hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+    <div class="modal" role="document">
+      <h3 id="login-modal-title">Sign in</h3>
+      <p class="muted small">Access your account to manage bookings.</p>
+      <form class="auth-form" onsubmit="return false;">
+        <label class="field"><span class="field-label">Email</span><input id="login-email" type="email" required placeholder="you@domain.com"></label>
+        <label class="field"><span class="field-label">Password</span><input id="login-password" type="password" required placeholder="••••••••"></label>
+        <div class="actions">
+          <button id="login-submit" class="btn-primary">Sign in</button>
+          <button type="button" class="btn-ghost" onclick="closeModal('modal-login')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-signup" class="modal-backdrop hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="signup-modal-title">
+    <div class="modal" role="document">
+      <h3 id="signup-modal-title">Create account</h3>
+      <p class="muted small">Sign up to book faster and save rewards.</p>
+      <form class="auth-form" onsubmit="return false;">
+        <label class="field"><span class="field-label">Full name</span><input id="signup-name" type="text" required placeholder="Your full name"></label>
+        <label class="field"><span class="field-label">Email</span><input id="signup-email" type="email" required placeholder="you@domain.com"></label>
+        <label class="field"><span class="field-label">Password</span><input id="signup-password" type="password" required placeholder="Create a password"></label>
+        <div class="actions">
+          <button id="signup-submit" class="btn-primary">Create account</button>
+          <button type="button" class="btn-ghost" onclick="closeModal('modal-signup')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-route" class="modal-backdrop hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="route-modal-title">
+    <div class="modal" role="document">
+      <h3 id="route-modal-title">Route details</h3>
+      <div id="route-detail" class="small muted">Loading...</div>
+      <div style="margin-top:12px" id="route-stops"></div>
+      <div class="actions" style="margin-top:12px">
+        <button id="book-route" class="btn-primary">Book seat</button>
+        <button type="button" class="btn-ghost" onclick="closeModal('modal-route')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ***** Seat selection modal ***** -->
+  <div id="modal-seat" class="modal-backdrop hidden" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="seat-modal-title">
+    <div class="modal" role="document">
+      <h3 id="seat-modal-title">Select your seats</h3>
+      <p class="muted small" id="seat-info">Choose up to <strong id="seat-limit">3</strong> seats</p>
+
+      <div id="seat-map" class="seat-grid" role="grid" aria-label="Seat selection"></div>
+
+      <div class="seat-legend" aria-hidden="true">
+        <div class="legend-item"><span class="legend-sample" style="background:linear-gradient(90deg,var(--accent-1),var(--accent-2));border:0"></span> Selected</div>
+        <div class="legend-item"><span class="legend-sample" style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)"></span> Available</div>
+        <div class="legend-item"><span class="legend-sample" style="background:rgba(255,255,255,0.01);opacity:0.45"></span> Occupied</div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+        <div class="small muted">Selected: <span id="selected-count">0</span></div>
+        <div class="actions">
+          <button id="confirm-book" class="btn-primary">Confirm booking</button>
+          <button type="button" class="btn-ghost" onclick="closeModal('modal-seat')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <template id="route-card-tpl">
+    <div class="route-card" role="article">
+      <div>
+        <div class="route-name"></div>
+        <div class="route-meta muted small"></div>
+      </div>
+      <div class="route-actions">
+        <button class="pill view-route">View</button>
+        <button class="pill book-route">Book</button>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    /* ---------- Demo data ---------- */
+    const PUBLIC_KEY="sb_publishable_qXyuqTasjBGJHA8I7ICKRA_lETs3or2";
+    const DEMO_ROUTES = [
+      {id: 'R1', name: 'Bangalore ⇄ Anantappur', duration: '230m', buses: 220, stops: ['Center', '1st St', 'Market', 'North Gate']},
+      {id: 'R2', name: 'Hyderabad ⇄ vijayawada', duration: '98m', buses: 4, stops: ['East Park', 'Mall', 'Lakeside']},
+      {id: 'R3', name: 'Mumbai ⇄ karnataka', duration: '92m', buses: 5, stops: ['Station', 'Old Town', 'Tech Hub']},
+      {id: 'R4', name: 'Airport Express', duration: '55m', buses: 3, stops: ['Airport', 'Express Way', 'Downtown']},
+      {id: 'R5', name: 's-vyasa', duration: '22m', buses: 8, stops: [' Campus', 'Library', 'Sports Complex', 'South Gate']},
+      {id: 'R6', name: 'Market Shuttle', duration: '18m', buses: 2, stops: ['Market', 'Market North', 'Suburb']},
+    ];
+
+    /* ---------- Seat map config ---------- */
+    const SEAT_ROWS = 6;      // rows in seat map
+    const SEAT_COLS = 4;      // columns (e.g., 2+aisle+2)
+    const SEAT_LIMIT = 3;     // max selectable seats per booking
+
+    let currentRouteId = null;
+    let occupiedSeats = {};   // store occupied per route (demo)
+    let selectedSeats = [];
+
+    /* ---------- Helpers ---------- */
+    function $(sel, root=document) { return root.querySelector(sel) }
+    function $all(sel, root=document) { return Array.from(root.querySelectorAll(sel)) }
+
+    /* ---------- Render routes ---------- */
+    function renderRoutes() {
+      const list = $('#routes-list');
+      list.innerHTML = '';
+      const tpl = $('#route-card-tpl');
+      DEMO_ROUTES.forEach(r => {
+        const node = tpl.content.cloneNode(true);
+        node.querySelector('.route-name').innerText = r.name;
+        node.querySelector('.route-meta').innerText = `${r.duration} • ${r.buses} buses`;
+        const viewBtn = node.querySelector('.view-route');
+        const bookBtn = node.querySelector('.book-route');
+        viewBtn.addEventListener('click', () => openRoute(r.id));
+        bookBtn.addEventListener('click', () => { openRoute(r.id); setTimeout(()=> openSeatModal(r.id), 250) });
+        list.appendChild(node);
+      });
+    }
+
+    /* ---------- Modals (open/close with focus trap) ---------- */
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if(!modal) return;
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden','false');
+      // focus first focusable inside
+      const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if(focusable) focusable.focus();
+      trapFocus(modal);
+      // Esc to close
+      modal.addEventListener('keydown', escHandler);
+    }
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if(!modal) return;
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden','true');
+      releaseFocusTrap(modal);
+      modal.removeEventListener('keydown', escHandler);
+    }
+    function escHandler(e){ if(e.key === 'Escape') { const modal = e.currentTarget; modal.classList.add('hidden'); modal.setAttribute('aria-hidden','true'); releaseFocusTrap(modal); } }
+
+    /* Focus trap implementation (simple) */
+    const focusTraps = new Map();
+    function trapFocus(root){
+      const focusable = Array.from(root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+        .filter(el=>!el.hasAttribute('disabled'));
+      if(focusable.length === 0) return;
+      const first = focusable[0], last = focusable[focusable.length-1];
+      function handler(e){
+        if(e.key !== 'Tab') return;
+        if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+        else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+      }
+      root.addEventListener('keydown', handler);
+      focusTraps.set(root, handler);
+    }
+    function releaseFocusTrap(root){
+      const h = focusTraps.get(root);
+      if(h) root.removeEventListener('keydown', h);
+      focusTraps.delete(root);
+    }
+
+    /* ---------- Route detail ---------- */
+    function openRoute(id) {
+      const r = DEMO_ROUTES.find(x => x.id === id);
+      if(!r) return;
+      currentRouteId = id;
+      $('#route-modal-title').innerText = r.name;
+      $('#route-detail').innerText = `Duration: ${r.duration} • ${r.buses} buses`;
+      const stopsWrap = $('#route-stops');
+      stopsWrap.innerHTML = '<strong class="muted">Stops:</strong>';
+      const list = document.createElement('ol'); list.style.margin = '6px 0 0 18px';
+      r.stops.forEach(s => { const li = document.createElement('li'); li.innerText = s; list.appendChild(li); });
+      stopsWrap.appendChild(list);
+      openModal('modal-route');
+    }
+
+    /* ---------- Seat modal & map ---------- */
+    function openSeatModal(routeId){
+      currentRouteId = routeId;
+      selectedSeats = [];
+      $('#selected-count').innerText = '0';
+      $('#seat-limit').innerText = SEAT_LIMIT;
+      // ensure there's an occupied list for route
+      occupiedSeats[routeId] = occupiedSeats[routeId] || generateRandomOccupied();
+      buildSeatMap(routeId);
+      openModal('modal-seat');
+    }
+
+    function buildSeatMap(routeId){
+      const map = $('#seat-map');
+      map.innerHTML = '';
+      const occupied = new Set(occupiedSeats[routeId] || []);
+      // create grid of seats R1C1 .. R6C4 etc.
+      for(let r=1;r<=SEAT_ROWS;r++){
+        for(let c=1;c<=SEAT_COLS;c++){
+          const seatId = `R${r}C${c}`;
+          const btn = document.createElement('button');
+          btn.className = 'seat';
+          btn.type = 'button';
+          btn.setAttribute('role','gridcell');
+          btn.setAttribute('aria-label', `Row ${r} seat ${c}`);
+          btn.setAttribute('data-seat', seatId);
+          btn.tabIndex = 0;
+          if(occupied.has(seatId)){
+            btn.setAttribute('aria-disabled','true');
+            btn.innerText = 'X';
+          } else {
+            btn.setAttribute('aria-pressed','false');
+            btn.innerText = seatId.replace('R','').replace('C','-');
+            btn.addEventListener('click', seatToggleHandler);
+            btn.addEventListener('keydown', seatKeyHandler);
+          }
+          map.appendChild(btn);
+        }
+      }
+      // After created focus first available seat
+      setTimeout(()=> {
+        const firstAvail = map.querySelector('.seat[aria-pressed="false"]');
+        if(firstAvail) firstAvail.focus();
+      },0);
+    }
+
+    function seatToggleHandler(e){
+      const btn = e.currentTarget;
+      const seatId = btn.getAttribute('data-seat');
+      // If disabled ignore
+      if(btn.getAttribute('aria-disabled') === 'true') return;
+      const pressed = btn.getAttribute('aria-pressed') === 'true';
+      if(pressed){
+        // unselect
+        btn.setAttribute('aria-pressed','false');
+        btn.style.removeProperty('background');
+        selectedSeats = selectedSeats.filter(s => s !== seatId);
+      } else {
+        // check limit
+        if(selectedSeats.length >= SEAT_LIMIT){
+          alert(`You can select up to ${SEAT_LIMIT} seats.`);
+          return;
+        }
+        btn.setAttribute('aria-pressed','true');
+        selectedSeats.push(seatId);
+      }
+      $('#selected-count').innerText = selectedSeats.length;
+    }
+
+    function seatKeyHandler(e){
+      // Allow Enter/Space to toggle
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        e.currentTarget.click();
+      }
+      // Arrow navigation between seats
+      const key = e.key;
+      if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
+        e.preventDefault();
+        navigateSeat(e.currentTarget, key);
+      }
+    }
+
+    function navigateSeat(el, direction){
+      // compute index in grid
+      const seats = Array.from($('#seat-map').children);
+      const idx = seats.indexOf(el);
+      const cols = SEAT_COLS;
+      let targetIndex = idx;
+      if(direction === 'ArrowLeft') targetIndex = idx - 1;
+      if(direction === 'ArrowRight') targetIndex = idx + 1;
+      if(direction === 'ArrowUp') targetIndex = idx - cols;
+      if(direction === 'ArrowDown') targetIndex = idx + cols;
+      if(targetIndex < 0 || targetIndex >= seats.length) return;
+      const target = seats[targetIndex];
+      if(target) target.focus();
+    }
+
+    function generateRandomOccupied(){
+      // demo: make some seats occupied randomly (deterministic-ish)
+      const occ = [];
+      const seed = Math.floor(Math.random()*1000) % 7 + 2;
+      for(let i=0;i<seed;i++){
+        const r = Math.floor(Math.random()*SEAT_ROWS)+1;
+        const c = Math.floor(Math.random()*SEAT_COLS)+1;
+        occ.push(`R${r}C${c}`);
+      }
+      return occ;
+    }
+
+    /* ---------- Confirm booking (demo) ---------- */
+    function confirmBooking(){
+      if(selectedSeats.length === 0){ alert('Please select at least one seat.'); return; }
+      // Mark seats occupied (demo)
+      const arr = occupiedSeats[currentRouteId] || [];
+      selectedSeats.forEach(s => arr.push(s));
+      occupiedSeats[currentRouteId] = Array.from(new Set(arr));
+      // Close seat modal
+      closeModal('modal-seat');
+      // Show success
+      alert(`Booking confirmed for ${selectedSeats.length} seat(s): ${selectedSeats.join(', ')}\n( Demo only — no payment or backend )`);
+      // reset selection
+      selectedSeats = [];
+      // update admin lists if any
+      renderRoutes();
+      initAdmin();
+    }
+
+    /* ---------- Booking initialization ---------- */
+    function initBooking() {
+      const bookBtn = $('#book-route');
+      if(bookBtn) bookBtn.addEventListener('click', () => {
+        closeModal('modal-route');
+        openSeatModal(currentRouteId);
+      });
+      $('#confirm-book').addEventListener('click', confirmBooking);
+    }
+
+    /* ---------- Auth (demo) ---------- */
+    function initAuth() {
+      $('#open-login').addEventListener('click', () => openModal('modal-login'));
+      $('#open-signup').addEventListener('click', () => openModal('modal-signup'));
+      // click backdrop to close: add listener that checks target
+      ['modal-login','modal-signup','modal-route','modal-seat'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.addEventListener('click', (e)=> { if(e.target === el) closeModal(id); });
+      });
+
+      $('#login-submit').addEventListener('click', () => {
+        const email = $('#login-email').value.trim();
+        const pass = $('#login-password').value.trim();
+        if(!email || !pass){ alert('Enter credentials'); return; }
+        alert('Signed in (demo).');
+        closeModal('modal-login');
+      });
+
+      $('#signup-submit').addEventListener('click', () => {
+        const name = $('#signup-name').value.trim();
+        const email = $('#signup-email').value.trim();
+        const pass = $('#signup-password').value.trim();
+        if(!name || !email || !pass){ alert('Fill all fields'); return; }
+        alert('Account created (demo). Please sign in.');
+        closeModal('modal-signup');
+        openModal('modal-login');
+      });
+    }
+
+    /* ---------- Admin helpers (demo) ---------- */
+    function initAdmin() {
+      const adminList = $('#routes-admin');
+      if(!adminList) return;
+      adminList.innerHTML = '';
+      DEMO_ROUTES.forEach(r => {
+        const el = document.createElement('div');
+        el.className = 'route-card';
+        el.style.display = 'flex';
+        el.style.justifyContent = 'space-between';
+        el.style.alignItems = 'center';
+        el.style.marginBottom = '8px';
+        el.innerHTML = `<div><div style="font-weight:800">${r.name}</div><div class="muted small">${r.duration} • ${r.buses} buses</div></div>
+          <div style="display:flex;gap:8px"><button class="pill" onclick="editRoute('${r.id}')">Edit</button><button class="pill" onclick="deleteRoute('${r.id}')">Delete</button></div>`;
+        adminList.appendChild(el);
+      });
+      const addBtn = $('#admin-add-route');
+      if(addBtn) addBtn.addEventListener('click', () => {
+        const name = prompt('Route name (demo):');
+        if(name){ alert('Added route (demo): ' + name); }
+      });
+    }
+    window.editRoute = function(id){ alert('Edit route (demo): '+id) }
+    window.deleteRoute = function(id){ if(confirm('Delete '+id+'?')) alert('Deleted (demo): '+id) }
+
+    /* ---------- Counters animation ---------- */
+    function animateCounts(){
+      const els = document.querySelectorAll('.count');
+      els.forEach((el,i) => {
+        const raw = el.innerText.trim();
+        let target = parseInt(raw.replace(/\D/g,'')) || 0;
+        let suffix = raw.replace(/\d/g,'');
+        let curr = 0; const steps = 40; const inc = Math.max(1, Math.ceil(target/steps));
+        const t = setInterval(()=> {
+          curr += inc;
+          if(curr >= target){ el.innerText = suffix.includes('K') ? Math.round(target/1000)+'K+' : (target + (suffix||'')); clearInterval(t) }
+          else el.innerText = curr + (suffix||'')
+        }, 25);
+      });
+    }
+
+    /* ---------- Theme toggle (light/dark) ---------- */
+    function initTheme(){
+      const btn = document.createElement('button');
+      btn.id = 'theme-toggle';
+      btn.title = 'Toggle light/dark';
+      btn.style.position = 'fixed';
+      btn.style.right = '18px';
+      btn.style.bottom = '18px';
+      btn.style.border = 'none';
+      btn.style.padding = '10px 12px';
+      btn.style.borderRadius = '12px';
+      btn.style.background = 'var(--accent-grad)';
+      btn.style.color = '#07202a';
+      btn.style.cursor = 'pointer';
+      btn.style.zIndex = 9999;
+      btn.innerText = 'Light';
+      document.body.appendChild(btn);
+      btn.addEventListener('click', () => {
+        document.documentElement.classList.toggle('light-theme');
+        const on = document.documentElement.classList.contains('light-theme');
+        btn.innerText = on ? 'Dark' : 'Light';
+        localStorage.setItem('sby-theme', on ? 'light' : 'dark');
+      });
+      const saved = localStorage.getItem('sby-theme');
+      if(saved === 'light'){ document.documentElement.classList.add('light-theme'); btn.innerText = 'Dark' }
+      const styleEl = document.createElement('style');
+      styleEl.innerHTML = `
+        .light-theme { --bg: #f7fafc; --card: #ffffff; --muted:#556; --glass: rgba(0,0,0,0.03); color:#07202a; }
+        .light-theme body{background: linear-gradient(180deg,var(--bg), #eef5ff);}
+        .light-theme .card{background:linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01)); color: #07202a}
+        .light-theme .pill{background:transparent;color:#224}
+      `;
+      document.head.appendChild(styleEl);
+    }
+
+    /* ---------- Init UI ---------- */
+    function renderRoutes(){
+      const list = $('#routes-list');
+      list.innerHTML = '';
+      const tpl = $('#route-card-tpl');
+      DEMO_ROUTES.forEach(r => {
+        const node = tpl.content.cloneNode(true);
+        node.querySelector('.route-name').innerText = r.name;
+        node.querySelector('.route-meta').innerText = `${r.duration} • ${r.buses} buses`;
+        const viewBtn = node.querySelector('.view-route');
+        const bookBtn = node.querySelector('.book-route');
+        viewBtn.addEventListener('click', () => openRoute(r.id));
+        bookBtn.addEventListener('click', () => { openRoute(r.id); setTimeout(()=> openSeatModal(r.id), 250) });
+        list.appendChild(node);
+      });
+    }
+
+    /* ---------- Init on DOM ready ---------- */
+    document.addEventListener('DOMContentLoaded', () => {
+      renderRoutes();
+      initAuth();
+      initAdmin();
+      initBooking();
+      animateCounts();
+      initTheme();
+
+      // wire CTAs
+      $('#cta-start').addEventListener('click', ()=> openModal('modal-signup'));
+      $('#start-yathra').addEventListener('click', ()=> openModal('modal-signup'));
+
+      // safety: close modals with escape globally
+      document.addEventListener('keydown', (e)=> {
+        if(e.key === 'Escape'){
+          ['modal-login','modal-signup','modal-route','modal-seat'].forEach(id=>{
+            const el = document.getElementById(id);
+            if(el && !el.classList.contains('hidden')) closeModal(id);
+          });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
